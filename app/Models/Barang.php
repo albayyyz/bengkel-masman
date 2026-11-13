@@ -19,4 +19,9 @@ class Barang extends Model
         'stok',
         'harga_jual'
     ];
+
+    public function transaksiDetails()
+    {
+        return $this->hasMany(TransaksiDetail::class, 'barang_id');
+    }
 }

@@ -114,24 +114,28 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
-                                <tr>
-                                    <th class="px-4 py-3 text-center">No</th>
-                                    <th class="px-4 py-3">Tanggal</th>
-                                    <th class="px-4 py-3">Pelanggan</th>
-                                    <th class="px-4 py-3">Rincian Item</th>
-                                    <th class="px-4 py-3 text-right">Total Bayar</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
-                                </tr>
-                            </table>
-                            <tbody>
+     <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+    <tr>
+        <th class="px-4 py-3 text-center">No. Transaksi</th>
+        <th class="px-4 py-3">Tanggal</th>
+        <th class="px-4 py-3">Pelanggan</th>
+        <th class="px-4 py-3">Rincian Item</th>
+        <th class="px-4 py-3 text-right">Total Bayar</th>
+        <th class="px-4 py-3 text-center">Aksi</th>
+    </tr>
+</thead>
+<tbody>
                                 @forelse($transaksis as $index => $t)
                                     <tr class="bg-white border-b hover:bg-gray-50 transition">
-                                        <td class="px-4 py-3.5 text-center font-mono text-gray-600">{{ $index + 1 }}</td>
-                                        <td class="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">
-                                            {{ $t->created_at->format('d-m-Y H:i') }} WIB
-                                        </td>
-                                        <td class="px-4 py-3.5 font-semibold text-gray-800">{{ $t->nama_pelanggan }}</td>
+                                        <td class="px-4 py-3.5 text-center font-mono text-gray-600">
+    TRX-{{ str_pad($t->id, 3, '0', STR_PAD_LEFT) }}
+</td>
+                                       <td class="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">
+    {{ $t->tanggal_transaksi->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }} WIB
+</td>
+<td class="px-4 py-3.5 font-semibold text-gray-800">
+    {{ $t->pelanggan->nama_pelanggan ?? '-' }}
+</td>
                                         <td class="px-4 py-3.5">
                                             <ul class="text-xs space-y-1 text-gray-600 list-disc pl-3">
                                                 @foreach($t->details as $d)
@@ -164,65 +168,94 @@
                                         </td>
                                     </tr>
 
-                                    {{-- === ELEMEN TERSEMBUNYI: FORMAT STRUK THERMAL UNTUK MATRIKS PRINT === --}}
-                                    <div id="nota-{{ $t->id }}" class="hidden-print-template hidden font-mono text-xs p-2 w-72 mx-auto text-black" style="display: none;">
-                                        <div style="font-weight: bold; text-align: center; font-size: 14px; margin-bottom: 2px;">CV MASMAN SEJAHTERA</div>
-                                        <div style="text-align: center; font-size: 10px; margin-bottom: 10px;">Nota Suku Cadang & Jasa Servis Bengkel</div>
-                                        <div style="border-top: 1px dashed black; margin: 4px 0;"></div>
-                                        <p style="margin: 2px 0;">Nota ID    : #{{ $t->id }}</p>
-                                        <p style="margin: 2px 0;">Tanggal    : {{ $t->created_at->format('d-m-Y H:i') }} WIB</p>
-                                        <p style="margin: 2px 0;">Pelanggan  : {{ $t->nama_pelanggan }}</p>
-                                        <div style="border-top: 1px dashed black; margin: 4px 0;"></div>
-                                        
-                                        @php $adaBarang = false; @endphp
-                                        @foreach($t->details as $d)
-                                            @if(($d->barang->jenis ?? '') === 'Barang')
-                                                @if(!$adaBarang)
-                                                    <p style="font-weight: bold; margin-top: 6px; margin-bottom: 4px;">[ SUKU CADANG / SPAREPART ]</p>
-                                                    @php $adaBarang = true; @endphp
-                                                @endif
-                                                <div class="flex-row">
-                                                    <span class="item-name">- {{ $d->barang->nama_barang ?? 'Item Dihapus' }} (x{{ $d->jumlah }})</span>
-                                                    <span class="text-right">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</span>
-                                                </div>
-                                            @endif
-                                        @endforeach
-
-                                        @php $adaJasa = false; @endphp
-                                        @foreach($t->details as $d)
-                                            @if(($d->barang->jenis ?? '') === 'Jasa')
-                                                @if(!$adaJasa)
-                                                    <p style="font-weight: bold; margin-top: 8px; margin-bottom: 4px;">[ TINDAKAN JASA SERVIS ]</p>
-                                                    @php $adaJasa = true; @endphp
-                                                @endif
-                                                <div class="flex-row">
-                                                    <span class="item-name">- {{ $d->barang->nama_barang ?? 'Item Dihapus' }} (x{{ $d->jumlah }})</span>
-                                                    <span class="text-right">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</span>
-                                                </div>
-                                            @endif
-                                        @endforeach
-
-                                        <div style="border-top: 1px dashed black; margin: 8px 0;"></div>
-                                        <div class="flex-row" style="font-weight: bold; font-size: 13px;">
-                                            <span>TOTAL NOTA:</span>
-                                            <span class="text-right">Rp {{ number_format($t->total_bayar, 0, ',', '.') }}</span>
-                                        </div>
-                                        <div style="border-top: 1px dashed black; margin: 8px 0;"></div>
-                                        <div style="text-align: center; font-size: 10px; margin-top: 12px; font-weight: bold;">TERIMA KASIH ATAS KEPERCAYAAN ANDA</div>
-                                    </div>
-
                                 @empty
                                     <tr>
                                         <td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">Belum ada riwayat transaksi masuk.</td>
                                     </tr>
                                 @endforelse
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            {{-- === SEKSI AUDIT TRAIL / LOG AKTIVITAS TERBARU === --}}
+                   {{-- === DATA NOTA TERSEMBUNYI UNTUK CETAK ULANG === --}}
+<div class="hidden">
+    @foreach($transaksis as $t)
+        <div id="nota-{{ $t->id }}" class="hidden-print-template font-mono text-xs p-2 w-72 mx-auto text-black">
+            <div style="font-weight: bold; text-align: center; font-size: 14px; margin-bottom: 2px;">CV MASMAN SEJAHTERA</div>
+            <div style="text-align: center; font-size: 10px; margin-bottom: 10px;">Nota Suku Cadang & Jasa Servis Bengkel</div>
+            <div style="border-top: 1px dashed black; margin: 4px 0;"></div>
+
+            <p style="margin: 2px 0;">No. Transaksi : TRX-{{ str_pad($t->id, 3, '0', STR_PAD_LEFT) }}</p>
+            <p style="margin: 2px 0;">Tanggal       : {{ $t->tanggal_transaksi->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }} WIB</p>
+            <p style="margin: 2px 0;">Pelanggan     : {{ $t->pelanggan->nama_pelanggan ?? '-' }}</p>
+
+            <div style="border-top: 1px dashed black; margin: 4px 0;"></div>
+
+            @php $adaBarang = false; @endphp
+
+            @foreach($t->details as $d)
+                @if(($d->barang->jenis ?? '') === 'Barang')
+                    @if(!$adaBarang)
+                        <p style="font-weight: bold; margin-top: 6px; margin-bottom: 4px;">
+                            [ SUKU CADANG / SPAREPART ]
+                        </p>
+                        @php $adaBarang = true; @endphp
+                    @endif
+
+                    <div class="flex-row">
+                        <span class="item-name">
+                            - {{ $d->barang->nama_barang ?? 'Item Dihapus' }} (x{{ $d->jumlah }})
+                        </span>
+                        <span class="text-right">
+                            Rp {{ number_format($d->subtotal, 0, ',', '.') }}
+                        </span>
+                    </div>
+                @endif
+            @endforeach
+
+            @php $adaJasa = false; @endphp
+
+            @foreach($t->details as $d)
+                @if(($d->barang->jenis ?? '') === 'Jasa')
+                    @if(!$adaJasa)
+                        <p style="font-weight: bold; margin-top: 8px; margin-bottom: 4px;">
+                            [ TINDAKAN JASA SERVIS ]
+                        </p>
+                        @php $adaJasa = true; @endphp
+                    @endif
+
+                    <div class="flex-row">
+                        <span class="item-name">
+                            - {{ $d->barang->nama_barang ?? 'Item Dihapus' }} (x{{ $d->jumlah }})
+                        </span>
+                        <span class="text-right">
+                            Rp {{ number_format($d->subtotal, 0, ',', '.') }}
+                        </span>
+                    </div>
+                @endif
+            @endforeach
+
+            <div style="border-top: 1px dashed black; margin: 8px 0;"></div>
+
+            <div class="flex-row" style="font-weight: bold; font-size: 13px;">
+                <span>TOTAL NOTA:</span>
+                <span class="text-right">
+                    Rp {{ number_format($t->total_bayar, 0, ',', '.') }}
+                </span>
+            </div>
+
+            <div style="border-top: 1px dashed black; margin: 8px 0;"></div>
+
+            <div style="text-align: center; font-size: 10px; margin-top: 12px; font-weight: bold;">
+                TERIMA KASIH ATAS KEPERCAYAAN ANDA
+            </div>
+        </div>
+    @endforeach
+</div>
+
+{{-- === SEKSI AUDIT TRAIL / LOG AKTIVITAS TERBARU === --}}
             <div class="bg-white overflow-hidden shadow sm:rounded-lg border border-gray-100 print:hidden mt-6">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="flex items-center justify-between mb-4">
@@ -240,21 +273,20 @@
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
-                                <tr>
-                                    <th class="px-4 py-3 text-center">Waktu</th>
-                                    <th class="px-4 py-3">User</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
-                                    <th class="px-4 py-3">Deskripsi Log Aktivitas</th>
-                                    <th class="px-4 py-3 text-center">Alamat IP</th>
-                                </tr>
-                            </thead>
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+    <tr>
+        <th class="px-4 py-3">Tanggal</th>
+        <th class="px-4 py-3">User</th>
+        <th class="px-4 py-3 text-center">Aksi</th>
+        <th class="px-4 py-3">Deskripsi</th>
+        <th class="px-4 py-3 text-center">IP Address</th>
+    </tr>
+</thead>
                             <tbody class="divide-y divide-gray-100">
-                                @forelse($activityLogs ?? [] as $log)
+                                @forelse($auditTrails ?? [] as $log)
                                     <tr class="hover:bg-gray-50/70 transition">
                                         <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-600">
-                                            {{ $log->created_at->format('d-m-Y H:i:s') }} WIB
-                                        </td>
+{{ $log->created_at->setTimezone('Asia/Jakarta')->format('d-m-Y H:i:s') }} WIB                                        </td>
                                         <td class="px-4 py-3 font-semibold text-gray-800 text-xs">
                                             {{ $log->user->name ?? 'System/Guest' }}
                                         </td>
@@ -439,15 +471,15 @@
                         }
                     </style>
                 </head>
-                <body>
-                    \${isiNota}
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            setTimeout(function() { window.close(); }, 500);
-                        }
-                    <\/script>
-                </body>
+               <body>
+    ${isiNota}
+    <script>
+        window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+        }
+    <\/script>
+</body>
                 </html>
             `);
             jendelaPrint.document.close();

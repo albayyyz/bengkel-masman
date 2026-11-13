@@ -8,7 +8,7 @@
                         📋 Petunjuk Kasir Bengkel
                     </h2>
                     <ul class="text-xs text-gray-600 space-y-2 list-disc pl-4 leading-relaxed">
-                        <li>Masukkan nama pelanggan/pemilik kendaraan.</li>
+                        <li>Pilih pelanggan dari daftar. Pelanggan yang belum terdaftar harus ditambahkan lebih dulu di menu Pelanggan.</li>
                         <li>Gunakan tombol <span class="text-blue-600 font-bold">"➕ Tambah Baris Baru"</span> jika pelanggan membeli lebih dari satu jenis Suku Cadang atau Jasa Servis.</li>
                         <li>Sistem akan mendeteksi tipe item secara otomatis: stok item bertipe <span class="font-bold">Barang</span> akan berkurang, sedangkan item bertipe <span class="font-bold">Jasa</span> tidak akan mengurangi stok ganti.</li>
                     </ul>
@@ -40,16 +40,15 @@
                             <div class="text-center text-[10px] mb-3">Nota Suku Cadang & Jasa Servis Bengkel</div>
                             <hr class="border-dashed border-black my-1">
                             <p>Tanggal   : {{ now()->format('d-m-Y H:i') }} WIB</p>
-                            <p>Pelanggan : {{ session('nama_pelanggan') ?? 'Umum' }}</p>
-                            <hr class="border-dashed border-black my-1">
-                            
-                            <!-- Memanggil data transaksi terakhir pelanggan ini untuk membaca item aslinya -->
                             @php
-                                $transaksiTerakhir = \App\Models\Transaksi::with('details.barang')
-                                                                        ->where('nama_pelanggan', session('nama_pelanggan'))
-                                                                        ->latest()
-                                                                        ->first();
+                                $transaksiTerakhir = session('transaksi_id')
+                                    ? \App\Models\Transaksi::with(['details.barang', 'pelanggan'])->find(session('transaksi_id'))
+                                    : null;
                             @endphp
+                            <p>Pelanggan : {{ $transaksiTerakhir->pelanggan->nama_pelanggan ?? '-' }}</p>
+                            <hr class="border-dashed border-black my-1">
+
+                            <!-- $transaksiTerakhir sudah diambil di atas berdasarkan ID transaksi yang baru disimpan -->
 
                             @if($transaksiTerakhir)
                                 <!-- KELOMPOK BARANG / SPAREPART -->
@@ -111,8 +110,19 @@
                         @csrf
                         
                         <div>
-                            <label class="block font-bold text-sm text-gray-700 mb-1">Nama Pelanggan:</label>
-                            <input type="text" name="nama_pelanggan" class="w-full border border-gray-300 rounded p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Contoh: Budi - Avanza B 1234 ABC" required>
+                            <label class="block font-bold text-sm text-gray-700 mb-1">Pelanggan:</label>
+                            <select name="pelanggan_id" class="w-full border border-gray-300 rounded p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" required>
+                                <option value="">-- Pilih Pelanggan --</option>
+                                @foreach($pelanggans as $p)
+                                    <option value="{{ $p->id }}" {{ old('pelanggan_id') == $p->id ? 'selected' : '' }}>{{ $p->nama_pelanggan }} - {{ $p->no_telepon }}</option>
+                                @endforeach
+                            </select>
+                            @error('pelanggan_id')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                            @if($pelanggans->isEmpty())
+                                <p class="text-xs text-red-600 mt-1">Belum ada data pelanggan. Tambahkan terlebih dahulu di menu <a href="{{ route('pelanggan.index') }}" class="underline font-bold">Pelanggan</a>.</p>
+                            @endif
                         </div>
 
                         <div>

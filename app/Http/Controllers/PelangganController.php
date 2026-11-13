@@ -11,51 +11,63 @@ class PelangganController extends Controller
     public function index()
     {
         $pelanggan = Pelanggan::latest()->get();
+
         return view('pelanggan.index', compact('pelanggan'));
     }
 
-    // 2. Menyimpan Data Pelanggan Baru ke Database
+    // 2. Menyimpan Data Pelanggan Baru
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama_pelanggan' => 'required|string|max:100',
             'no_telepon' => 'required|string|max:15',
             'alamat' => 'nullable|string',
         ]);
 
-        Pelanggan::create($request->all());
+        Pelanggan::create($validated);
 
-        return redirect()->back()->with('success', 'Data pelanggan berhasil ditambahkan!');
+        return redirect()->back()
+            ->with('success', 'Data pelanggan berhasil ditambahkan!');
     }
 
     // 3. Menghapus Data Pelanggan
     public function destroy($id)
     {
         $pelanggan = Pelanggan::findOrFail($id);
+
+        // Mencegah penghapusan pelanggan yang memiliki transaksi
+        if ($pelanggan->transaksis()->exists()) {
+            return redirect()->back()
+                ->with('error', 'Data pelanggan tidak dapat dihapus karena masih memiliki riwayat transaksi.');
+        }
+
         $pelanggan->delete();
 
-        return redirect()->back()->with('success', 'Data pelanggan berhasil dihapus!');
+        return redirect()->back()
+            ->with('success', 'Data pelanggan berhasil dihapus!');
     }
 
-    // 4. Menampilkan Halaman Edit Pelanggan (Sudah Bersih dari Angka Typo)
+    // 4. Menampilkan Halaman Edit Pelanggan
     public function edit($id)
     {
         $pelanggan = Pelanggan::findOrFail($id);
+
         return view('pelanggan.edit', compact('pelanggan'));
     }
 
-    // 5. Menyimpan Perubahan Data Pelanggan
+    // 5. Memperbarui Data Pelanggan
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama_pelanggan' => 'required|string|max:100',
             'no_telepon' => 'required|string|max:15',
             'alamat' => 'nullable|string',
         ]);
 
         $pelanggan = Pelanggan::findOrFail($id);
-        $pelanggan->update($request->all());
+        $pelanggan->update($validated);
 
-        return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil diperbarui!');
+        return redirect()->route('pelanggan.index')
+            ->with('success', 'Data pelanggan berhasil diperbarui!');
     }
 }

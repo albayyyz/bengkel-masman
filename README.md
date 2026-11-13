@@ -1,58 +1,131 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bengkel Masman
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi manajemen usaha berbasis web untuk CV Masman Sejahtera. Aplikasi ini dikembangkan menggunakan Laravel untuk membantu pengelolaan data pelanggan, barang dan jasa, transaksi, inventori, serta pencatatan aktivitas aplikasi.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Manajemen Pelanggan:** pengelolaan data pelanggan.
+- **Manajemen Barang dan Jasa:** pengelolaan informasi barang dan jasa.
+- **Manajemen Transaksi:** pencatatan dan pengelolaan transaksi usaha.
+- **Manajemen Inventori:** pengelolaan stok barang.
+- **Audit Trail:** pencatatan aktivitas dan perubahan data tertentu dalam aplikasi.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Teknologi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.3
+- Laravel 13
+- MySQL 8
+- Laravel Breeze
+- Blade
+- Tailwind CSS
+- Alpine.js
+- Vite
+- Chart.js
 
-## Learning Laravel
+## Persyaratan Sistem
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Pastikan perangkat sudah memiliki:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3 atau versi yang sesuai dengan kebutuhan proyek.
+- Composer.
+- Node.js dan NPM.
+- MySQL 8.
+- Web server lokal, misalnya Laragon.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Instalasi
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone Repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/albayyyz/bengkel-masman.git
+cd bengkel-masman
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Instal Dependensi PHP
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Instal Dependensi Frontend
 
-## Code of Conduct
+```bash
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Konfigurasi Environment
 
-## Security Vulnerabilities
+Salin file konfigurasi:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+cp .env.example .env
+```
 
-## License
+Pada Windows, file `.env.example` juga dapat disalin secara manual menjadi `.env`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Sesuaikan konfigurasi database pada `.env`:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bengkel_masman
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Buat database kosong dengan nama `bengkel_masman` melalui MySQL sebelum menjalankan migrasi.
+
+### 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Jalankan Migrasi Database
+
+```bash
+php artisan migrate
+```
+
+Pastikan perintah migrasi dijalankan pada database lokal yang memang disiapkan untuk instalasi baru.
+
+### 7. Build Frontend
+
+```bash
+npm run build
+```
+
+### 8. Jalankan Aplikasi
+
+```bash
+php artisan serve
+```
+
+Buka alamat berikut melalui browser:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Pengujian
+
+Pengujian otomatis dapat dijalankan menggunakan:
+
+```bash
+php artisan test
+```
+
+Pastikan konfigurasi database pengujian menggunakan database terpisah agar tidak mengganggu database aplikasi.
+
+## Struktur Modul
+
+Aplikasi mencakup pengelolaan pelanggan, barang dan jasa, transaksi, inventori, serta pencatatan aktivitas. Implementasi dan detail setiap modul dapat ditinjau langsung melalui source code pada repository.
+
+## Tujuan Pengembangan
+
+Proyek ini dikembangkan sebagai studi kasus pengelolaan usaha pada CV Masman Sejahtera, dengan pendekatan pengembangan Rapid Application Development (RAD).
+
+---
+
+**Repository:** https://github.com/albayyyz/bengkel-masman

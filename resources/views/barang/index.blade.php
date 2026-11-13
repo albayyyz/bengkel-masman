@@ -13,6 +13,11 @@
                     <span class="font-bold">Berhasil!</span> {{ session('success') }}
                 </div>
             @endif
+            @if(session('error'))
+    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg shadow-sm border border-red-200" role="alert">
+        <span class="font-bold">Gagal!</span> {{ session('error') }}
+    </div>
+@endif
 
             @if ($errors->any())
                 <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg shadow-sm border border-red-200" role="alert">

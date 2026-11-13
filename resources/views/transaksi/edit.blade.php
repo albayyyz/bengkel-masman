@@ -11,10 +11,20 @@
                     @csrf
                     @method('PUT')
                     
-                    <div>
-                        <label class="block font-bold text-sm text-gray-700 mb-1">Nama Pelanggan:</label>
-                        <input type="text" name="nama_pelanggan" value="{{ $transaksi->nama_pelanggan }}" class="w-full border border-gray-300 rounded p-2.5 text-sm" required>
-                    </div>
+                        <div>
+                            <label class="block font-bold text-sm text-gray-700 mb-1">Pelanggan:</label>
+                            <select name="pelanggan_id" class="w-full border border-gray-300 rounded p-2.5 text-sm" required>
+                                <option value="">-- Pilih Pelanggan --</option>
+                                @foreach($pelanggans as $p)
+<option value="{{ $p->id }}" {{ old('pelanggan_id', $transaksi->pelanggan_id) == $p->id ? 'selected' : '' }}>
+    {{ $p->nama_pelanggan }} - {{ $p->no_telepon }}
+</option>
+                                @endforeach
+                            </select>
+                            @error('pelanggan_id')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                     <div>
                         <label class="block font-bold text-sm text-gray-700 mb-2">Item Suku Cadang & Jasa Servis:</label>
@@ -25,11 +35,11 @@
                                 <div class="flex-1">
                                     <select name="items[{{ $index }}][barang_id]" class="w-full border border-gray-300 rounded p-2 text-sm item-select" onchange="hitungTotalBaris()" required>
                                         <option value="">-- Pilih Suku Cadang / Jasa --</option>
-                                        @foreach($barangs as $b)
-                                            <option value="{{ $b->id }}" data-harga="{{ $b->harga_jual }}" {{ $b->id == $detail->barang_id ? 'selected' : '' }}>
-                                                [{{ strtoupper($b->jenis) }}] {{ $b->nama_barang }} - Rp {{ number_format($b->harga_jual, 0, ',', '.') }}
-                                            </option>
-                                        @endforeach
+                                       @foreach($barangs as $b)
+    <option value="{{ $b->id }}" data-harga="{{ $b->harga_jual }}" {{ $b->id == $detail->barang_id ? 'selected' : '' }}>
+        [{{ strtoupper($b->jenis) }}] {{ $b->nama_barang }} - Rp {{ number_format($b->harga_jual, 0, ',', '.') }}
+    </option>
+@endforeach
                                     </select>
                                 </div>
                                 <div class="w-full sm:w-24">
@@ -79,21 +89,21 @@
                 
                 divBaru.innerHTML = `
                     <div class="flex-1">
-                        <select name="items[\${indexBaris}][barang_id]" class="w-full border border-gray-300 rounded p-2 text-sm item-select" onchange="hitungTotalBaris()" required>
+                        <select name="items[${indexBaris}][barang_id]" class="w-full border border-gray-300 rounded p-2 text-sm item-select" onchange="hitungTotalBaris()" required>
                             <option value="">-- Pilih Suku Cadang / Jasa --</option>
                             @foreach($barangs as $b)
                                 <option value="{{ $b->id }}" data-harga="{{ $b->harga_jual }}">
-                                    [\{{ strtoupper($b->jenis) }}] {{ $b->nama_barang }} - Rp {{ number_format($b->harga_jual, 0, ',', '.') }}
+                                    [{{ strtoupper($b->jenis) }}] {{ $b->nama_barang }} - Rp {{ number_format($b->harga_jual, 0, ',', '.') }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="w-full sm:w-24">
-                        <input type="number" name="items[\${indexBaris}][jumlah]" class="w-full border border-gray-300 rounded p-2 text-sm text-center item-qty" placeholder="Qty" min="1" value="1" oninput="hitungTotalBaris()" required>
+                        <input type="number" name="items[${indexBaris}][jumlah]" class="w-full border border-gray-300 rounded p-2 text-sm text-center item-qty" placeholder="Qty" min="1" value="1" oninput="hitungTotalBaris()" required>
                     </div>
                     <div class="w-full sm:w-36 relative">
                         <input type="text" class="w-full border border-gray-300 rounded p-2 text-sm bg-gray-50 font-semibold text-gray-700 item-subtotal-display" placeholder="Rp 0" readonly>
-                        <input type="hidden" name="items[\${indexBaris}][subtotal]" class="item-subtotal-hidden">
+                        <input type="hidden" name="items[${indexBaris}][subtotal]" class="item-subtotal-hidden">
                     </div>
                     <button type="button" onclick="hapusBarisItem(this)" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3.5 py-2 rounded text-sm transition shadow-sm">
                         ✕
@@ -144,4 +154,11 @@
             }
         }
     </script>
+      @if(session('error'))
+        <div class="mb-4 rounded-lg bg-red-100 border border-red-400 px-4 py-3 text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- isi halaman Edit Transaksi -->
 </x-app-layout>

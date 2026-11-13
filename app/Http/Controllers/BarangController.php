@@ -3,88 +3,104 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\TransaksiDetail;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class BarangController extends Controller
 {
-    // 1. Menampilkan Semua Data Barang & Jasa
+    // Menampilkan semua data barang dan jasa
     public function index()
     {
         $barang = Barang::latest()->get();
+
         return view('barang.index', compact('barang'));
     }
 
-    // 2. Menyimpan Data Barang/Jasa Baru
+    // Menyimpan barang atau jasa baru
     public function store(Request $request)
     {
-        // PEMBERSIH otomatis: Jika ada input nominal dengan format titik (cth: 50.000), bersihkan jadi angka murni (50000)
-        if ($request->has('harga_jual') && $request->harga_jual !== null) {
-            $cleanedHarga = preg_replace('/[^0-9]/', '', $request->harga_jual);
-            $request->merge(['harga_jual' => $cleanedHarga]);
-        }
-
-        // PERBAIKAN VALIDASI: Mengubah 'integer' menjadi 'numeric' agar lebih aman dan toleran
-        $request->validate([
+        $validated = $request->validate([
             'nama_barang' => 'required|string|max:100',
-            'jenis'       => 'required|in:Barang,Jasa',
-            'stok'        => 'required_if:jenis,Barang|nullable|integer|min:0',
-            'harga_jual'  => 'required|numeric|min:0',
+            'jenis' => 'required|in:Barang,Jasa',
+            'stok' => 'required_if:jenis,Barang|nullable|integer|min:0',
+            'harga_jual' => 'required|integer|min:0',
         ]);
 
-        $data = $request->all();
-
-        // Jika inputnya Jasa, paksa stok menjadi 0 secara otomatis di backend
-        if ($request->jenis === 'Jasa') {
-            $data['stok'] = 0;
+        if ($validated['jenis'] === 'Jasa') {
+            $validated['stok'] = 0;
         }
 
-        Barang::create($data);
+        Barang::create($validated);
 
-        return redirect()->route('barang.index')->with('success', 'Data barang/jasa berhasil ditambahkan!');
+        return redirect()->route('barang.index')
+            ->with('success', 'Data barang/jasa berhasil ditambahkan!');
     }
 
-    // 3. Menampilkan Halaman Edit
+    // Menampilkan halaman edit
     public function edit($id)
     {
         $barang = Barang::findOrFail($id);
+
         return view('barang.edit', compact('barang'));
     }
 
-    // 4. Menyimpan Perubahan Data (Update)
+    // Memperbarui data barang atau jasa
     public function update(Request $request, $id)
     {
-        // PEMBERSIH otomatis pada proses edit data
-        if ($request->has('harga_jual') && $request->harga_jual !== null) {
-            $cleanedHarga = preg_replace('/[^0-9]/', '', $request->harga_jual);
-            $request->merge(['harga_jual' => $cleanedHarga]);
-        }
-
-        // PERBAIKAN VALIDASI: Mengubah 'integer' menjadi 'numeric'
-        $request->validate([
+        $validated = $request->validate([
             'nama_barang' => 'required|string|max:100',
-            'jenis'       => 'required|in:Barang,Jasa',
-            'stok'        => 'required_if:jenis,Barang|nullable|integer|min:0',
-            'harga_jual'  => 'required|numeric|min:0',
+            'jenis' => 'required|in:Barang,Jasa',
+            'stok' => 'required_if:jenis,Barang|nullable|integer|min:0',
+            'harga_jual' => 'required|integer|min:0',
         ]);
 
         $barang = Barang::findOrFail($id);
-        $data = $request->all();
 
-        if ($request->jenis === 'Jasa') {
-            $data['stok'] = 0;
+        // Periksa apakah barang sudah digunakan dalam transaksi
+        $sudahDigunakan = TransaksiDetail::where(
+            'barang_id',
+            $barang->id
+        )->exists();
+
+        // Cegah perubahan jenis jika sudah memiliki riwayat transaksi
+        if ($sudahDigunakan && $validated['jenis'] !== $barang->jenis) {
+            throw ValidationException::withMessages([
+                'jenis' => 'Jenis barang/jasa tidak dapat diubah karena sudah digunakan dalam riwayat transaksi.',
+            ]);
         }
 
-        $barang->update($data);
+        // Stok jasa selalu nol
+        if ($validated['jenis'] === 'Jasa') {
+            $validated['stok'] = 0;
+        }
 
-        return redirect()->route('barang.index')->with('success', 'Data barang/jasa berhasil diperbarui!');
+        $barang->update($validated);
+
+        return redirect()->route('barang.index')
+            ->with('success', 'Data barang/jasa berhasil diperbarui!');
     }
 
-    // 5. Menghapus Data Barang/Jasa
+    // Menghapus barang atau jasa
     public function destroy($id)
     {
         $barang = Barang::findOrFail($id);
+
+        $digunakanDalamTransaksi = TransaksiDetail::where(
+            'barang_id',
+            $barang->id
+        )->exists();
+
+        if ($digunakanDalamTransaksi) {
+            return redirect()->back()->with(
+                'error',
+                "Barang/jasa '{$barang->nama_barang}' tidak dapat dihapus karena sudah digunakan dalam transaksi."
+            );
+        }
+
         $barang->delete();
 
-        return redirect()->back()->with('success', 'Data barang/jasa berhasil dihapus!');
+        return redirect()->back()
+            ->with('success', 'Data barang/jasa berhasil dihapus!');
     }
 }

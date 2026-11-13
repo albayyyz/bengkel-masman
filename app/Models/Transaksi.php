@@ -11,9 +11,21 @@ class Transaksi extends Model
 
     // Kolom yang diizinkan untuk diisi secara massal
     protected $fillable = [
-        'nama_pelanggan',
+        'pelanggan_id',
         'total_bayar',
     ];
+
+    protected $casts = [
+        'tanggal_transaksi' => 'datetime',
+    ];
+
+    /**
+     * Relasi ke tabel Pelanggan (Satu transaksi dimiliki oleh satu pelanggan)
+     */
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
+    }
 
     /**
      * Relasi ke tabel TransaksiDetail (Satu transaksi memiliki banyak detail barang/jasa)

@@ -24,3 +24,18 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local database and backup files
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+/database/*.sqlite
+/database/*.sqlite3
+/database/*.db
+
+# Local test artifacts
+/bengkel_masman_migration_v3_test
+
+# Local backup files
+*.backup-*
